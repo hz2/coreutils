@@ -2364,6 +2364,17 @@ fn copy_file(
 
     let dest_permissions = calculate_dest_permissions(dest, &source_metadata, options, context)?;
 
+    if options.copy_mode == CopyMode::Update {
+        if let (Ok(src_meta), Ok(dst_meta)) = (fs::metadata(source), fs::metadata(dest)) {
+            let src_mtime = FileTime::from_last_modification_time(&src_meta);
+            let dst_mtime = FileTime::from_last_modification_time(&dst_meta);
+
+            if dst_mtime > src_mtime {
+                return Ok(()); // destination is newer; skip copying
+            }
+        }
+    }
+
     #[cfg(unix)]
     let source_is_fifo = source_metadata.file_type().is_fifo();
     #[cfg(not(unix))]
