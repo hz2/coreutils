@@ -587,6 +587,14 @@ mod gnu_expr {
     }
 
     #[test]
+    fn test_orexpr() {
+        new_ucmd!()
+            .args(&["a^b", ":", "a^b"])
+            .succeeds()
+            .stdout_only("3\n");
+    }
+
+    #[test]
     fn test_orempty() {
         new_ucmd!()
             .args(&["", "|", ""])

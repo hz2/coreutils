@@ -1481,6 +1481,20 @@ fn test_ls_long_total_size() {
 }
 
 #[test]
+fn test_ls_no_total() {
+    let scene = TestScenario::new(util_name!());
+    let at = &scene.fixtures;
+    at.touch(at.plus_as_string("test-long"));
+    at.append("test-long", "1");
+    at.touch(at.plus_as_string("test-long2"));
+    at.append("test-long2", "2");
+
+    let result = scene.ucmd().arg("-l").arg("--suppress-total").succeeds();
+
+    result.stdout_does_not_contain("total ");
+}
+
+#[test]
 #[cfg(not(feature = "feat_selinux"))]
 // Disabled on the SELinux runner for now
 fn test_ls_long_formats() {

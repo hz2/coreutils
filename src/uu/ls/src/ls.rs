@@ -169,6 +169,7 @@ pub mod options {
     pub static ZERO: &str = "zero";
     pub static DIRED: &str = "dired";
     pub static HYPERLINK: &str = "hyperlink";
+    pub static SUPPRESS_TOTAL: &str = "suppress-total";
 }
 
 const DEFAULT_TERM_WIDTH: u16 = 80;
@@ -362,6 +363,7 @@ pub struct Config {
     recursive: bool,
     reverse: bool,
     dereference: Dereference,
+    suppress_total: bool,
     ignore_patterns: Vec<Pattern>,
     size_format: SizeFormat,
     directory: bool,
@@ -1094,6 +1096,7 @@ impl Config {
             recursive: options.get_flag(options::RECURSIVE),
             reverse: options.get_flag(options::REVERSE),
             dereference,
+            suppress_total: options.get_flag(options::SUPPRESS_TOTAL),
             ignore_patterns,
             size_format,
             directory: options.get_flag(options::DIRECTORY),
@@ -1474,6 +1477,13 @@ pub fn uu_app() -> Command {
                 .help("Ignore entries which end with ~.")
                 .action(ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new("suppress-total")
+                .long("suppress-total")
+                .help("Suppress the 'total' line in long format output")
+                .action(ArgAction::SetTrue)
+                .hide(true), 
+        )        
         // Sort arguments
         .arg(
             Arg::new(options::SORT)
@@ -2303,7 +2313,7 @@ fn enter_directory(
     sort_entries(&mut entries, config, out);
 
     // Print total after any error display
-    if config.format == Format::Long || config.alloc_size {
+    if config.format == Format::Long || config.alloc_size && !config.suppress_total {
         let total = return_total(&entries, config, out)?;
         write!(out, "{}", total.as_str())?;
         if config.dired {
@@ -2433,6 +2443,7 @@ fn return_total(
     if config.dired {
         dired::indent(out)?;
     }
+    println!("config.suppress_total: {}", config.suppress_total);
     Ok(format!(
         "total {}{}",
         display_size(total_size, config),
