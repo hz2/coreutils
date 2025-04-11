@@ -2313,7 +2313,7 @@ fn enter_directory(
     sort_entries(&mut entries, config, out);
 
     // Print total after any error display
-    if config.format == Format::Long || config.alloc_size && !config.suppress_total {
+    if config.format == Format::Long || config.alloc_size {
         let total = return_total(&entries, config, out)?;
         write!(out, "{}", total.as_str())?;
         if config.dired {
@@ -2433,6 +2433,9 @@ fn return_total(
     config: &Config,
     out: &mut BufWriter<Stdout>,
 ) -> UResult<String> {
+    if config.suppress_total {
+        return Ok(String::new());
+    }
     let mut total_size = 0;
     for item in items {
         total_size += item
@@ -2443,7 +2446,6 @@ fn return_total(
     if config.dired {
         dired::indent(out)?;
     }
-    println!("config.suppress_total: {}", config.suppress_total);
     Ok(format!(
         "total {}{}",
         display_size(total_size, config),
