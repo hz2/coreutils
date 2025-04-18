@@ -78,14 +78,14 @@ impl Input {
                 path.canonicalize().ok()
             }
             InputKind::File(_) | InputKind::Stdin => {
-                #[cfg(all(unix, not(target_vendor = "apple")))]
+                #[cfg(unix)]
                 {
-                    return PathBuf::from(text::FD0).canonicalize().ok();
+                    #[cfg(not(target_os = "macos"))]
+                    {
+                        PathBuf::from(text::FD0).canonicalize().ok()
+                    }
                 }
-                #[cfg(any(not(unix), target_vendor = "apple"))]
-                {
-                    return None;
-                }
+                None
             }
         }
     }
