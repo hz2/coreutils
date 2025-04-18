@@ -308,6 +308,7 @@ fn test_stdin_redirect_dir() {
 // FIXME: If `std::io::ErrorKind::IsADirectory` becomes stable or macos handles
 //  redirected directories like linux show the correct message like in
 //  `test_stdin_redirect_dir`
+// https://github.com/rust-lang/rust/issues/86442
 #[test]
 #[cfg(target_vendor = "apple")]
 fn test_stdin_redirect_dir_when_target_os_is_macos() {
