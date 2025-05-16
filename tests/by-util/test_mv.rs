@@ -1893,3 +1893,32 @@ fn test_special_file_different_filesystem() {
     assert!(Path::new("/dev/shm/tmp/f").exists());
     std::fs::remove_dir_all("/dev/shm/tmp").unwrap();
 }
+
+#[cfg(not(windows))]
+#[test]
+fn test_mv_atomic_dir_different_filesystem() {
+    let (at, mut ucmd) = at_and_ucmd!();
+
+    at.mkdir("foo");
+    for name in &["a", "b", "c", "d"] {
+        at.touch(&format!("foo/{}", name));
+    }
+
+    at.mkdir("other");
+
+    ucmd.args(&["foo", "other"]).succeeds().no_output();
+
+    // *desired* atomic behavior: foo should still exist with 4 files
+    assert!(
+        at.dir_exists("foo"),
+        "source directory ‘foo’ was removed—but should remain"
+    );
+    let count = std::fs::read_dir(at.plus("foo"))
+        .expect("reading foo failed")
+        .count();
+    assert_eq!(
+        count, 4,
+        "expected 4 files in source after interrupted move, found {}",
+        count
+    );
+}
